@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".main.LibraryActivity">
-
-    <include
-        layout="@layout/actionbar"
-        android:id="@+id/activity_library_actionbar" />
+    tools:context=".main.profile.ContributionFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/activity_library_recyclerview"
+        android:id="@+id/contribution_fragment_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/activity_library_actionbar"
-        android:layoutAnimation="@anim/layout_animation" />
+        android:layout_height="match_parent" />
 
     <ProgressBar
-        android:id="@+id/activity_library_progressbar"
+        android:id="@+id/contribution_fragment_progressbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true" />

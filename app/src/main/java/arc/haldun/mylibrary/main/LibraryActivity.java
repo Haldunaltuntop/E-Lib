@@ -90,6 +90,8 @@ public class LibraryActivity extends AppCompatActivity {
             Intent intent = new Intent(LibraryActivity.this, WelcomeActivity.class);
             startActivity(intent); // WelcomeActivity'ye yönlendir
         }
+
+        int a = 0;
     }
 
     @Override
