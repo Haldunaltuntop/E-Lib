@@ -12,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import arc.haldun.database.database.haldun;
 import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.R;
 
@@ -80,9 +82,9 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         //
         // Init
         //
-        tv_username.setText(getString(R.string.user_name, ""));
+        tv_username.setText(getString(R.string.user_name));
         tv_email.setText(getString(R.string.prompt_email));
-        tv_password.setText(getString(R.string.password, ""));
+        tv_password.setText(getString(R.string.password));
 
         et_username.setText(CurrentUser.user.getName());
         et_email.setText(CurrentUser.user.getEMail());
@@ -101,6 +103,10 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     private void saveChanges() {
+
+        // TODO: Improve this code
+
+        Toast.makeText(requireContext(), getString(R.string.not_supported_yet), Toast.LENGTH_SHORT).show();
 
     }
 

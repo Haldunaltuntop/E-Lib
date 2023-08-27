@@ -1,6 +1,9 @@
 package arc.haldun.mylibrary.main;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,8 +15,10 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +30,7 @@ import java.sql.SQLException;
 import arc.haldun.database.database.haldun;
 import arc.haldun.database.objects.Book;
 import arc.haldun.database.objects.CurrentUser;
+import arc.haldun.helper.Help;
 import arc.haldun.mylibrary.PreferencesTool;
 import arc.haldun.mylibrary.R;
 import arc.haldun.mylibrary.WelcomeActivity;
@@ -64,6 +70,46 @@ public class LibraryActivity extends AppCompatActivity {
         }
 
         loadBooks();
+
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+            Intent intent = new Intent(LibraryActivity.this, Help.class);
+            intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
+            //startService(intent);
+
+        } else {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder
+                    .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz")
+                    .setPositiveButton("İzin ver", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+                        }
+                    })
+                    .setNegativeButton("Reddet:(", null);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+
+            case 0 :
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(LibraryActivity.this, Help.class);
+                    intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
+                    startService(intent);
+                }
+        }
     }
 
     @Override

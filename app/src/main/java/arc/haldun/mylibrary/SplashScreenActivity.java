@@ -3,9 +3,12 @@ package arc.haldun.mylibrary;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Locale;
 
 import arc.haldun.Observable;
 import arc.haldun.Observer;
@@ -25,8 +29,10 @@ import arc.haldun.database.database.haldun;
 import arc.haldun.database.driver.Connector;
 import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.main.LibraryActivity;
+import arc.haldun.mylibrary.main.settings.SettingsActivity;
 import arc.haldun.mylibrary.network.DB;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashScreenActivity extends AppCompatActivity {
 
     TextView textView;
@@ -55,6 +61,21 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         textView.setText("OnCreate");
         progressBar.setProgress(10);
+
+        //
+        // Init language
+        //
+        PreferencesTool preferencesTool = new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE));
+        String language = preferencesTool.getString(PreferencesTool.Keys.LANGUAGE);
+        if (language == null || language.isEmpty() || language.equals("null")) {
+            preferencesTool.setValue(PreferencesTool.Keys.LANGUAGE, SettingsActivity.Language.getLanguage(SettingsActivity.Language.TURKISH));
+            language = SettingsActivity.Language.getLanguage(SettingsActivity.Language.TURKISH);
+        }
+        Locale locale = new Locale(language);
+        Resources resources = getResources();
+        Configuration configuration = resources.getConfiguration();
+        configuration.setLocale(locale);
+        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
 
         //
         // Init threads
@@ -123,8 +144,13 @@ public class SplashScreenActivity extends AppCompatActivity {
                 runOnUiThread(() -> textView.setText("Thread network check user"));
                 try {
                     CurrentUser.user = new haldun().getUser(firebaseUser.getUid());
-                    startActivity(new Intent(SplashScreenActivity.this, LibraryActivity.class));
-                    runOnUiThread(() -> textView.setText("Thread network redirected library activity"));
+                    if (CurrentUser.user == null) {
+                        firebaseAuth.signOut();
+
+                    } else {
+                        startActivity(new Intent(SplashScreenActivity.this, LibraryActivity.class));
+                        runOnUiThread(() -> textView.setText("Thread network redirected library activity"));
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                     Tools.makeText(getApplicationContext(), getString(R.string.connection_error));

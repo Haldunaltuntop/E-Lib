@@ -6,7 +6,7 @@ public class PreferencesTool {
 
     public static String NAME = "preferences";
 
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
 
     public PreferencesTool(SharedPreferences sharedPreferences) {
         this.sharedPreferences = sharedPreferences;
@@ -45,5 +45,6 @@ public class PreferencesTool {
     public static class Keys {
 
         public static String REMEMBER_ME = "remember_me";
+        public static String LANGUAGE = "language";
     }
 }
