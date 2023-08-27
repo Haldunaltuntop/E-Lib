@@ -153,7 +153,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         public void run() {
                             try {
                                 User user = new User(firebaseAuth.getCurrentUser().getUid(),
-                                        username, password, email, User.USER, new DateTime(), new DateTime());
+                                        username, "password", email, User.USER, new DateTime(), new DateTime());
                                 user.encrypt();
                                 new haldun().addUser(user);
                             } catch (SQLException e) {

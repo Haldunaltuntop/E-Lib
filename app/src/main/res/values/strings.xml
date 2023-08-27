@@ -53,6 +53,8 @@
     <string name="need_email">To run correctly remember me needed an e-mail</string>
     <string name="account_settings">Account Settings</string>
     <string name="book_details">Book Details</string>
+    <string name="book_name_cannot_be_empty">Book name cannot be empty</string>
+    <string name="author_cannot_be_empty">Author cannot be empty</string>
 
     <!-- Languages -->
     <string name="turkish" translatable="false">Türkçe</string>

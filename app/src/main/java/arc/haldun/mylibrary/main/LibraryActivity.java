@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -39,7 +40,7 @@ import arc.haldun.mylibrary.main.profile.ProfileActivity;
 import arc.haldun.mylibrary.main.settings.SettingsActivity;
 import arc.haldun.mylibrary.service.SetLastSeenService;
 
-public class LibraryActivity extends AppCompatActivity {
+public class LibraryActivity extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
@@ -47,6 +48,7 @@ public class LibraryActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ProgressBar progressBar;
     Toolbar actionbar;
+    FloatingActionButton fab_addBook;
 
     Book[] books;
     haldun haldunDB;
@@ -69,6 +71,8 @@ public class LibraryActivity extends AppCompatActivity {
             supportActionBar.setDisplayHomeAsUpEnabled(false);
         }
 
+        fab_addBook.setOnClickListener(this);
+
         loadBooks();
 
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -81,7 +85,7 @@ public class LibraryActivity extends AppCompatActivity {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder
-                    .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz")
+                    .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU")
                     .setPositiveButton("İzin ver", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -109,6 +113,7 @@ public class LibraryActivity extends AppCompatActivity {
                     intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
                     startService(intent);
                 }
+                break;
         }
     }
 
@@ -158,6 +163,15 @@ public class LibraryActivity extends AppCompatActivity {
 
         if (!rememberMe) {
             firebaseAuth.signOut();
+        }
+    }
+
+
+    @Override
+    public void onClick(View view) {
+
+        if (view.equals(fab_addBook)) {
+            startActivity(new Intent(LibraryActivity.this, AddBookActivity.class));
         }
     }
 
@@ -239,6 +253,7 @@ public class LibraryActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.activity_library_recyclerview);
         progressBar = findViewById(R.id.activity_library_progressbar);
         actionbar = findViewById(R.id.activity_library_actionbar);
+        fab_addBook = findViewById(R.id.activity_library_fab_addBook);
 
         try {
             haldunDB = new haldun();

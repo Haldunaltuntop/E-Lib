@@ -48,6 +48,7 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
             et_id.setEnabled(false);
             et_bookname.setEnabled(false);
             et_author.setEnabled(false);
+            et_owner.setEnabled(false);
             btn_save.setVisibility(View.GONE);
         }
 
