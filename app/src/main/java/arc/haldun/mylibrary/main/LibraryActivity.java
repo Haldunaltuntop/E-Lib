@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -23,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -34,6 +37,7 @@ import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.helper.Help;
 import arc.haldun.mylibrary.PreferencesTool;
 import arc.haldun.mylibrary.R;
+import arc.haldun.mylibrary.Sorting;
 import arc.haldun.mylibrary.WelcomeActivity;
 import arc.haldun.mylibrary.adapters.BookAdapter;
 import arc.haldun.mylibrary.main.profile.ProfileActivity;
@@ -49,6 +53,7 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
     ProgressBar progressBar;
     Toolbar actionbar;
     FloatingActionButton fab_addBook;
+    RelativeLayout relativeLayout;
 
     Book[] books;
     haldun haldunDB;
@@ -83,6 +88,15 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
         } else {
 
+            Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.ANIMATION_MODE_SLIDE);
+            snackbar.setAction("İzin ver", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+                }
+            });
+            snackbar.show();
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder
                     .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU")
@@ -95,10 +109,8 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
                     .setNegativeButton("Reddet:(", null);
 
             AlertDialog dialog = builder.create();
-            dialog.show();
+            //dialog.show();
         }
-
-
     }
 
     @Override
@@ -135,6 +147,8 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
                 }
             }).start();
         } else if (CurrentUser.user != null) {
+
+            Log.e("LibraryActivity", "Currentuser.user null idi");
 
         } else { // Giriş yapmış kullanıcı yokssa
 
@@ -217,6 +231,9 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
                 try {
                     books = haldunDB.selectBook();
+                    Sorting.sort(books, Sorting.Type.valueOf(new PreferencesTool(
+                            getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE))
+                            .getString(PreferencesTool.Keys.BOOK_SORTING_TYPE))); // Get sorting type from preferences
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -254,6 +271,7 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         progressBar = findViewById(R.id.activity_library_progressbar);
         actionbar = findViewById(R.id.activity_library_actionbar);
         fab_addBook = findViewById(R.id.activity_library_fab_addBook);
+        relativeLayout = findViewById(R.id.activity_library_relative_layout);
 
         try {
             haldunDB = new haldun();

@@ -46,5 +46,6 @@ public class PreferencesTool {
 
         public static String REMEMBER_ME = "remember_me";
         public static String LANGUAGE = "language";
+        public static String BOOK_SORTING_TYPE = "book_sorting_type";
     }
 }

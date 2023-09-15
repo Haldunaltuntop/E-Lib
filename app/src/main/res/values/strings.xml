@@ -105,4 +105,8 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >6 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="book">Book</string>
+    <string name="sort">Sort</string>
+    <string name="a_to_z">A to Z</string>
+    <string name="z_to_a">Z to A</string>
 </resources>

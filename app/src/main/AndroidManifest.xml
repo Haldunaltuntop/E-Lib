@@ -16,7 +16,7 @@
         android:theme="@style/Theme.ELib"
         tools:targetApi="31">
         <activity
-            android:name=".AddBookActivity"
+            android:name=".main.AddBookActivity"
             android:exported="false" />
         <activity
             android:name=".main.settings.SettingsActivity"

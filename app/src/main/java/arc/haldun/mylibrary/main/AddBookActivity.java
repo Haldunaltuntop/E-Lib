@@ -17,6 +17,8 @@ import java.sql.SQLException;
 
 import arc.haldun.database.database.haldun;
 import arc.haldun.database.objects.Book;
+import arc.haldun.database.objects.CurrentUser;
+import arc.haldun.database.objects.DateTime;
 import arc.haldun.mylibrary.R;
 
 public class AddBookActivity extends AppCompatActivity {
@@ -72,7 +74,7 @@ public class AddBookActivity extends AppCompatActivity {
                 public void run() {
                     Looper.prepare();
 
-                    Book book = new Book(bookName, author);
+                    Book book = new Book(bookName, author, CurrentUser.user, new DateTime());
 
                     try {
                         new haldun().addBook(book);
