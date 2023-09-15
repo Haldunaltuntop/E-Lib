@@ -88,7 +88,7 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
         } else {
 
-            Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.ANIMATION_MODE_SLIDE);
+            Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.LENGTH_INDEFINITE);
             snackbar.setAction("İzin ver", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -236,6 +236,8 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
                             .getString(PreferencesTool.Keys.BOOK_SORTING_TYPE))); // Get sorting type from preferences
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
+                } catch (IllegalArgumentException e) {
+                    new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE)).setValue(PreferencesTool.Keys.BOOK_SORTING_TYPE, String.valueOf(Sorting.Type.A_TO_Z));
                 }
             }
         });
