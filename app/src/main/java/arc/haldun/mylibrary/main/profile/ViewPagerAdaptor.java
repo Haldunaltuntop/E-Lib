@@ -26,6 +26,9 @@ public class ViewPagerAdaptor extends FragmentStateAdapter {
             case 2:
                 return new FriendsFragment();
 
+            case 3:
+                return  new BorrowedBooksFragment();
+
             default:
                 return new Fragment();
         }
@@ -33,6 +36,6 @@ public class ViewPagerAdaptor extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
     }
 }

@@ -88,28 +88,9 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
         } else {
 
-            Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.LENGTH_INDEFINITE);
-            snackbar.setAction("İzin ver", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-                }
-            });
-            snackbar.show();
+            //snackBar();
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder
-                    .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU")
-                    .setPositiveButton("İzin ver", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-                        }
-                    })
-                    .setNegativeButton("Reddet:(", null);
-
-            AlertDialog dialog = builder.create();
-            //dialog.show();
+            //alertDialog();
         }
     }
 
@@ -280,5 +261,32 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void alertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU")
+                .setPositiveButton("İzin ver", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+                    }
+                })
+                .setNegativeButton("Reddet:(", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void snackBar() {
+        Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction("İzin ver", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+            }
+        });
+        snackbar.show();
     }
 }

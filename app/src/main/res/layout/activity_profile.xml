@@ -30,6 +30,12 @@
             android:text="@string/contribution" />
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/activity_profile_tabitem_borrowedBooks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ödünç Alınanlar" />
+
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/activity_profile_tabitem_arkadaş"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
