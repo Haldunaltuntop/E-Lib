@@ -5,11 +5,13 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import arc.haldun.database.objects.Book;
@@ -23,6 +25,7 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
     String ownerName;
 
     EditText et_id, et_bookname, et_author, et_owner;
+    TextView tv_availability;
     Button btn_save;
     Toolbar actionbar;
 
@@ -56,6 +59,17 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
         et_bookname.setText(currentBook.getName());
         et_author.setText(currentBook.getAuthor());
         et_owner.setText(ownerName);
+
+        // Check availability of book
+
+        User borrower;
+        if ((borrower = currentBook.borrowedBy()) == null) {
+            tv_availability.setTextColor(Color.GREEN);
+            tv_availability.setText("Müsait");
+        } else {
+            tv_availability.setTextColor(Color.RED);
+            tv_availability.setText("Bu kitabı şu an " + borrower.getName() + " okuyor");
+        }
     }
 
     @Override
@@ -79,6 +93,7 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
         et_bookname = findViewById(R.id.activity_book_details_et_bookname);
         et_author = findViewById(R.id.activity_book_details_et_author);
         et_owner = findViewById(R.id.activity_book_details_et_owner);
+        tv_availability = findViewById(R.id.activity_book_details_tv_availability);
         btn_save = findViewById(R.id.activity_book_details_btn_save);
         actionbar = findViewById(R.id.activity_book_details_actionbar);
     }
@@ -91,8 +106,9 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
             String name = extras.getString("name");
             String author = extras.getString("author");
             ownerName = extras.getString("owner");
+            String borrower = extras.getString("borrower");
 
-            currentBook = new Book(id, name, author);
+            currentBook = new Book(id, name, author, borrower);
         } else {
             Toast.makeText(this, "Kitap seçilmemiş", Toast.LENGTH_SHORT).show();
             finish();

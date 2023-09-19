@@ -88,10 +88,20 @@
         android:layout_below="@id/activity_book_details_tv_owner"
         android:layout_marginTop="5dp" />
 
+    <TextView
+        android:id="@+id/activity_book_details_tv_availability"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="debug"
+        android:layout_below="@id/activity_book_details_et_owner"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/activity_book_details_et_owner" >
+        android:layout_below="@id/activity_book_details_et_owner"
+        android:visibility="gone" >
 
         <Button
             android:id="@+id/activity_book_details_btn_save"

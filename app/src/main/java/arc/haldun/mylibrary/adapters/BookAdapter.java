@@ -59,6 +59,13 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
                 intent.putExtra("author", currentBook.getAuthor());
                 intent.putExtra("owner", currentBook.getOwner().getName());
 
+                User borrower;
+                if ((borrower = currentBook.borrowedBy()) != null) {
+                    intent.putExtra("borrower", borrower.getName());
+                } else {
+                    intent.putExtra("borrower", "null");
+                }
+
                 rootActivity.startActivity(intent);
             }
         });

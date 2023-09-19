@@ -2,13 +2,27 @@ package arc.haldun.mylibrary.main.profile;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import arc.haldun.database.database.haldun;
+import arc.haldun.database.objects.Book;
+import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.R;
+import arc.haldun.mylibrary.adapters.BookAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,23 +36,13 @@ public class BorrowedBooksFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    RecyclerView recyclerView;
+    BookAdapter bookAdapter;
 
     public BorrowedBooksFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BorrowedBooksFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static BorrowedBooksFragment newInstance(String param1, String param2) {
         BorrowedBooksFragment fragment = new BorrowedBooksFragment();
         Bundle args = new Bundle();
@@ -52,8 +56,9 @@ public class BorrowedBooksFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            // TODO: Rename and change types of parameters
+            String mParam1 = getArguments().getString(ARG_PARAM1);
+            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -62,5 +67,35 @@ public class BorrowedBooksFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_borrowed_books, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        init(view); // Init views
+
+        Book[] borrowedBooks = CurrentUser.user.getBorrowedBooks();
+
+        if (borrowedBooks != null) {
+
+            bookAdapter = new BookAdapter(requireActivity(), borrowedBooks);
+
+            Animation animation = AnimationUtils.loadAnimation(requireContext(), R.anim.item_animation_fall_down);
+            LayoutAnimationController animationController = new LayoutAnimationController(animation);
+
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+            linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
+
+            recyclerView.setLayoutAnimation(animationController);
+            recyclerView.setLayoutManager(linearLayoutManager);
+            recyclerView.setAdapter(bookAdapter);
+
+        } else {
+            Toast.makeText(requireContext(), "Ödünç alınan kitabınız yok", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void init(View view) {
+        recyclerView = view.findViewById(R.id.fragment_borrowed_books_recycler_view);
     }
 }

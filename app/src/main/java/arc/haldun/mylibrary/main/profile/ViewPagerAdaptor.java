@@ -24,10 +24,10 @@ public class ViewPagerAdaptor extends FragmentStateAdapter {
                 return new ContributionFragment();
 
             case 2:
-                return new FriendsFragment();
+                return  new BorrowedBooksFragment();
 
             case 3:
-                return  new BorrowedBooksFragment();
+                return new FriendsFragment();
 
             default:
                 return new Fragment();
