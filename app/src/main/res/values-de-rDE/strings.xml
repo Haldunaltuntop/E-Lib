@@ -42,4 +42,6 @@
     <string name="sort">Sortieren</string>
     <string name="a_to_z">A zu Z</string>
     <string name="z_to_a">Z zu A</string>
+    <string name="old_to_new">Old zu New</string>
+    <string name="new_to_old">New zu Old</string>
 </resources>

@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import arc.haldun.database.database.haldun;
 import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.R;

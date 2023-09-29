@@ -70,6 +70,11 @@ public class BookDetailsActivity extends AppCompatActivity implements View.OnCli
             tv_availability.setTextColor(Color.RED);
             tv_availability.setText("Bu kitabı şu an " + borrower.getName() + " okuyor");
         }
+
+        if (currentBook.getId() == 1) {
+            tv_availability.setTextColor(Color.YELLOW);
+            tv_availability.setText("Вы не можете читать эту книгу");
+        }
     }
 
     @Override

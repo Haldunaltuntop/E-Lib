@@ -12,7 +12,7 @@ public class Sorting {
             for(int i = increment; i < books.length; ++i) {
                 Book temp = books[i];
 
-                for(int j = i; j >= increment && compare(books[j - increment].getName(), temp.getName(), sortingType) > 0; j -= increment) {
+                for(int j = i; j >= increment && compare(books[j - increment], temp, sortingType) > 0; j -= increment) {
                     books[j] = books[j - increment];
                     books[j - increment] = temp;
                 }
@@ -21,16 +21,22 @@ public class Sorting {
 
     }
 
-    private static int compare(String str1, String str2, Type sortingType) {
+    private static int compare(Book book1, Book book2, Type sortingType) {
         Collator collator = Collator.getInstance(new Locale("tr", "TR"));
 
         switch (sortingType) {
 
             case Z_TO_A:
-                return collator.compare(str2, str1);
+                return collator.compare(book2.getName(), book1.getName());
 
-            default:
-                return collator.compare(str1, str2);
+            case OLD_TO_NEW:
+                return collator.compare(book1.getRegDate().getDate(), book2.getRegDate().getDate());
+
+            case NEW_TO_OLD:
+                return collator.compare(book2.getRegDate().getDate(), book1.getRegDate().getDate());
+
+            default: // A_TO_Z and others
+                return collator.compare(book1.getName(), book2.getName());
         }
     }
 
@@ -52,11 +58,28 @@ public class Sorting {
         }
     }
 
+    public static Type findSortingType(int index) {
+
+        switch (index) {
+
+            case 1:
+                return Type.Z_TO_A;
+
+            case 2:
+                return Type.OLD_TO_NEW;
+
+            case 3:
+                return Type.NEW_TO_OLD;
+
+            default:
+                return Type.A_TO_Z;
+        }
+    }
+
     public enum Type {
         A_TO_Z,
         Z_TO_A,
         OLD_TO_NEW,
         NEW_TO_OLD;
-
     }
 }

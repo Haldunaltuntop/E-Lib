@@ -31,6 +31,7 @@ import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.main.LibraryActivity;
 import arc.haldun.mylibrary.main.settings.SettingsActivity;
 import arc.haldun.mylibrary.network.DB;
+import arc.haldun.mylibrary.service.SetLastSeenService;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashScreenActivity extends AppCompatActivity {
@@ -52,6 +53,8 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
+
+    boolean hasUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,12 +131,15 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                 server.addObserver(client);
 
+                hasUpdate = update.hasNew();
+                /*
+
                 if (update.hasNew()) {
 
-                    handler.post(() -> {
-                        server.setVersionCode(update.getVersionCode());
-                    });
+                    handler.post(() -> server.setVersionCode(update.getVersionCode()));
                 }
+
+                 */
 
             } catch (NullPointerException e) {
                 e.printStackTrace();
@@ -148,7 +154,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                         firebaseAuth.signOut();
 
                     } else {
-                        startActivity(new Intent(SplashScreenActivity.this, LibraryActivity.class));
+                        startActivity(new Intent(SplashScreenActivity.this, LibraryActivity.class)
+                                        .putExtra("HasUpdate", hasUpdate));
                         runOnUiThread(() -> textView.setText("Thread network redirected library activity"));
                     }
                 } catch (SQLException e) {
@@ -163,6 +170,12 @@ public class SplashScreenActivity extends AppCompatActivity {
 
             finish();
         });
+
+        //
+        // Set last seen
+        //
+        Intent setLastSeenIntent = new Intent(SplashScreenActivity.this, SetLastSeenService.class);
+        startService(setLastSeenIntent);
 
         threadMain.start();
 

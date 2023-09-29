@@ -1,9 +1,11 @@
 package arc.haldun.mylibrary.main;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,6 +36,7 @@ import java.sql.SQLException;
 import arc.haldun.database.database.haldun;
 import arc.haldun.database.objects.Book;
 import arc.haldun.database.objects.CurrentUser;
+import arc.haldun.helper.Action;
 import arc.haldun.helper.Help;
 import arc.haldun.mylibrary.PreferencesTool;
 import arc.haldun.mylibrary.R;
@@ -88,9 +91,42 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
         } else {
 
-            //snackBar();
+            Action.snackBar(LibraryActivity.this, relativeLayout);
+        }
 
-            //alertDialog();
+        //
+        // Show update notification
+        //
+
+        if (getIntent().getBooleanExtra("HasUpdate", false))
+        {
+            DialogInterface.OnClickListener onDialogPositiveClick = (dialogInterface, i) -> {
+
+                //
+                // Redirect download page
+                //
+                String url = "http://haldun.online";
+
+                try {
+                    Intent intentBrowser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intentBrowser.addCategory(Intent.CATEGORY_BROWSABLE);
+                    intentBrowser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intentBrowser);
+                } catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                }
+            };
+
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setTitle(getString(R.string.update))
+                    .setMessage(getString(R.string.new_version_released))
+                    .setPositiveButton(getString(R.string.download), onDialogPositiveClick)
+                    .setNegativeButton(getString(R.string.cancel), null);
+
+            AlertDialog dialog = dialogBuilder.create();
+            dialog.show();
+
+
         }
     }
 
@@ -98,16 +134,8 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
-
-            case 0 :
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(LibraryActivity.this, Help.class);
-                    intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
-                    startService(intent);
-                }
-                break;
-        }
+        Action.onPermissionResult(requestCode, permissions, grantResults, LibraryActivity.this,
+                                    CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
     }
 
     @Override
@@ -261,32 +289,5 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void alertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder
-                .setMessage("Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU")
-                .setPositiveButton("İzin ver", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-                    }
-                })
-                .setNegativeButton("Reddet:(", null);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private void snackBar() {
-        Snackbar snackbar = Snackbar.make(relativeLayout, "Verilerinizi telefonunuza kaydedebilmem için bana izin vermelisiniz UwU", Snackbar.LENGTH_INDEFINITE);
-        snackbar.setAction("İzin ver", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-            }
-        });
-        snackbar.show();
     }
 }

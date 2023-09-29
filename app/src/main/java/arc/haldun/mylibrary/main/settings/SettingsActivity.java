@@ -117,7 +117,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
         final int[] selectedSortingType = new int[1];
 
-        String[] options = {getString(R.string.a_to_z), getString(R.string.z_to_a)};
+        String[] options = {getString(R.string.a_to_z), getString(R.string.z_to_a),
+                getString(R.string.old_to_new), getString(R.string.new_to_old)};
 
         String currentSortingType = preferencesTool.getString(PreferencesTool.Keys.BOOK_SORTING_TYPE);
 
@@ -133,9 +134,14 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        // TODO: index zerinden sorting type değerini döndüren bir metod yaz ve onu preferences içine aktarmak için kullan
+
+                        Sorting.Type selectedType = Sorting.findSortingType(selectedSortingType[0]);
+                        preferencesTool.setValue(PreferencesTool.Keys.BOOK_SORTING_TYPE, selectedType.toString());
                     }
                 });
+
+        dialog = dialogBuilder.create();
+        dialog.show();
     }
 
     private void showLanguageOptionsDialog() {
