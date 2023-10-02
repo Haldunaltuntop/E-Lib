@@ -98,8 +98,10 @@
     <string name="login_failed">"Giriş başarısız"</string>
     <string name="book">Kitap</string>
     <string name="sort">Sıralama</string>
-    <string name="a_to_z">A\'dan Z\'ye</string>
-    <string name="z_to_a">Z\'den A\'ya</string>
+    <string name="a_to_z_book_name">A\'dan Z\'ye (Kitap Adı)</string>
+    <string name="z_to_a_book_name">Z\'den A\'ya (Kitap Adı)</string>
     <string name="old_to_new">Eskiden Yeniye</string>
     <string name="new_to_old">Yeniden Eskiye</string>
+    <string name="a_to_z_author_name">A\'dan Z\'ye (Yazar Adı)</string>
+    <string name="z_to_a_author_name">Z\'dan A\'ye (Yazar Adı)</string>
 </resources>

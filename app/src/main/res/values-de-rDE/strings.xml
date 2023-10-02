@@ -6,7 +6,7 @@
     <string name="welcome">Wilkommen %s</string>
     <string name="add">Hinzufügen</string>
     <string name="book_name">Buch Namen</string>
-    <string name="author">Autor(in)</string>
+    <string name="author">Autor*in</string>
     <string name="book_successfully_added">Das Buch hat hünzugefügt</string>
     <string name="book_could_not_add">Das Buch konnte nicht inzugefügt werden</string>
     <string name="login_failed_check_your_connection">Fheler! Überprüfen Sie Ihre Verbindung</string>
@@ -40,8 +40,10 @@
     <string name="login_failed">Fehler bei der Anmeldung</string>
     <string name="book">Buch</string>
     <string name="sort">Sortieren</string>
-    <string name="a_to_z">A zu Z</string>
-    <string name="z_to_a">Z zu A</string>
+    <string name="a_to_z_book_name">A zu Z (Buch Name)</string>
+    <string name="z_to_a_book_name">Z zu A (Buch Name)</string>
     <string name="old_to_new">Old zu New</string>
     <string name="new_to_old">New zu Old</string>
+    <string name="a_to_z_author_name">A zu Z (Autor*in Name)</string>
+    <string name="z_to_a_author_name">Z zu A (Autor*in Name)</string>
 </resources>

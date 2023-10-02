@@ -1,5 +1,6 @@
 package arc.haldun.mylibrary;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -172,7 +174,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             String email = CurrentUser.user.getEMail();
                             String password = CurrentUser.user.decrypt();
 
-                            if (email != null) {
+                            if (email != null && !email.isEmpty()) {
                                 firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                     @Override
                                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -183,12 +185,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 });
                             } else {
 
-                                if (preferencesTool.getBoolean(PreferencesTool.Keys.REMEMBER_ME)) {
-
-                                    Toast.makeText(LoginActivity.this, getString(R.string.need_email), Toast.LENGTH_SHORT).show();
-                                }
-
-                                startActivity(new Intent(LoginActivity.this, LibraryActivity.class));
+                                startActivity(new Intent(LoginActivity.this, LibraryActivity.class)
+                                                .putExtra("rememberMe", preferencesTool.getBoolean(PreferencesTool.Keys.REMEMBER_ME)));
                                 finish();
                             }
                         } else {

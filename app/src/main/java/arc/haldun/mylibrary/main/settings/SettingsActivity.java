@@ -13,18 +13,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Set;
 
 import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.mylibrary.PreferencesTool;
 import arc.haldun.mylibrary.R;
 import arc.haldun.mylibrary.Sorting;
 import arc.haldun.mylibrary.SplashScreenActivity;
-import arc.haldun.mylibrary.main.LibraryActivity;
 import arc.haldun.mylibrary.main.profile.ProfileActivity;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
@@ -117,8 +112,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
         final int[] selectedSortingType = new int[1];
 
-        String[] options = {getString(R.string.a_to_z), getString(R.string.z_to_a),
-                getString(R.string.old_to_new), getString(R.string.new_to_old)};
+        String[] options = {getString(R.string.a_to_z_book_name), getString(R.string.z_to_a_book_name),
+                getString(R.string.old_to_new), getString(R.string.new_to_old),
+                getString(R.string.a_to_z_author_name), getString(R.string.z_to_a_author_name)};
 
         String currentSortingType = preferencesTool.getString(PreferencesTool.Keys.BOOK_SORTING_TYPE);
 

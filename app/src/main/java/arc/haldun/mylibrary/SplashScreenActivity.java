@@ -120,30 +120,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     // TODO start error activity
                 }
             }
-            progressBar.setProgress(40);
 
-            //
-            // Check updates
-            //
-            try {
-                runOnUiThread(() -> textView.setText("Thread network check updates"));
-                update = Tools.hasUpdate(getApplicationContext());
-
-                server.addObserver(client);
-
-                hasUpdate = update.hasNew();
-                /*
-
-                if (update.hasNew()) {
-
-                    handler.post(() -> server.setVersionCode(update.getVersionCode()));
-                }
-
-                 */
-
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
             progressBar.setProgress(50);
 
             if (firebaseUser != null) {
@@ -154,6 +131,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                         firebaseAuth.signOut();
 
                     } else {
+
                         startActivity(new Intent(SplashScreenActivity.this, LibraryActivity.class)
                                         .putExtra("HasUpdate", hasUpdate));
                         runOnUiThread(() -> textView.setText("Thread network redirected library activity"));
@@ -170,12 +148,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
             finish();
         });
-
-        //
-        // Set last seen
-        //
-        Intent setLastSeenIntent = new Intent(SplashScreenActivity.this, SetLastSeenService.class);
-        startService(setLastSeenIntent);
 
         threadMain.start();
 

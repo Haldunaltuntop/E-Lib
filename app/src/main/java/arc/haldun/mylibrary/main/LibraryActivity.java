@@ -1,21 +1,35 @@
 package arc.haldun.mylibrary.main;
 
+import static java.security.AccessController.getContext;
+
 import android.Manifest;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -25,22 +39,34 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
+import arc.haldun.Cryptor;
 import arc.haldun.database.database.haldun;
+import arc.haldun.database.driver.Connector;
 import arc.haldun.database.objects.Book;
 import arc.haldun.database.objects.CurrentUser;
 import arc.haldun.helper.Action;
 import arc.haldun.helper.Help;
+import arc.haldun.mylibrary.BuildConfig;
+import arc.haldun.mylibrary.LoginActivity;
 import arc.haldun.mylibrary.PreferencesTool;
 import arc.haldun.mylibrary.R;
 import arc.haldun.mylibrary.Sorting;
+import arc.haldun.mylibrary.SplashScreenActivity;
+import arc.haldun.mylibrary.Tools;
 import arc.haldun.mylibrary.WelcomeActivity;
 import arc.haldun.mylibrary.adapters.BookAdapter;
 import arc.haldun.mylibrary.main.profile.ProfileActivity;
@@ -65,6 +91,8 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
 
     BookAdapter bookAdapter;
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,62 +100,66 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         init(); // Init contents
 
         setSupportActionBar(actionbar);
+        Log.e("DEBUG", "set action bar");
 
         ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar != null) {
             supportActionBar.setTitle(getString(R.string.app_name));
             supportActionBar.setDisplayHomeAsUpEnabled(false);
         }
-
-        fab_addBook.setOnClickListener(this);
-
-        loadBooks();
-
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-
-            Intent intent = new Intent(LibraryActivity.this, Help.class);
-            intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
-            //startService(intent);
-
-        } else {
-
-            Action.snackBar(LibraryActivity.this, relativeLayout);
-        }
+        Log.e("DEBUG", "set action bar 2");
 
         //
-        // Show update notification
+        // Check remember me availability
         //
+        boolean checkRememberMeAvailability = getIntent().getBooleanExtra("rememberMe", false);
+        if (checkRememberMeAvailability) checkRememberMeAvailability();
 
-        if (getIntent().getBooleanExtra("HasUpdate", false))
-        {
-            DialogInterface.OnClickListener onDialogPositiveClick = (dialogInterface, i) -> {
-
-                //
-                // Redirect download page
-                //
-                String url = "http://haldun.online";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
 
                 try {
-                    Intent intentBrowser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    intentBrowser.addCategory(Intent.CATEGORY_BROWSABLE);
-                    intentBrowser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intentBrowser);
-                } catch (ActivityNotFoundException e) {
-                    e.printStackTrace();
+                    //
+                    // Load books
+                    //
+                    loadBooks().join();
+
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            };
 
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-            dialogBuilder.setTitle(getString(R.string.update))
-                    .setMessage(getString(R.string.new_version_released))
-                    .setPositiveButton(getString(R.string.download), onDialogPositiveClick)
-                    .setNegativeButton(getString(R.string.cancel), null);
+                //
+                // Set last seen
+                //
+                setLastSeen();
 
-            AlertDialog dialog = dialogBuilder.create();
-            dialog.show();
+                //
+                // Check updates
+                //
+                checkUpdates();
 
+            }
+        }).start();
 
-        }
+        fab_addBook.setOnClickListener(this);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        loadBooks();
+
+                    }
+                });
+
+                thread.start();
+
+            }
+        });
     }
 
     @Override
@@ -148,8 +180,13 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
+                    try {Log.e("DEBUG", "get user and set last seen");
                         CurrentUser.user = new haldun().getUser(uid); // CurrentUser sınıfını başlat
+
+                        //
+                        // Set client version
+                        //
+                        haldun.update.user.client_id(CurrentUser.user.getId(), BuildConfig.VERSION_CODE);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -173,12 +210,6 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         super.onDestroy();
 
         //
-        // Set last seen
-        //
-        Intent setLastSeenService = new Intent(getApplicationContext(), SetLastSeenService.class);
-        startService(setLastSeenService); // Start service for setting last seen
-
-        //
         // Check remember me
         //
         PreferencesTool preferencesTool = new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE));
@@ -187,6 +218,11 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         if (!rememberMe) {
             firebaseAuth.signOut();
         }
+
+        //
+        // Set last seen
+        //
+        setLastSeen();
     }
 
 
@@ -219,6 +255,155 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         return true;
     }
 
+    private void checkUpdates() {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+
+
+            }
+        });
+
+        boolean hasUpdate = false;
+
+        try {
+
+            String sql = "SELECT * FROM updates";
+            Statement statement = Connector.connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+
+                int versionCode = resultSet.getInt("VersionCode");
+
+                if (versionCode > BuildConfig.VERSION_CODE) {
+                    hasUpdate = true;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            // TODO Tools.startErrorActivity(context);
+        }
+
+        if (hasUpdate) {
+
+            //
+            // Show dialog
+            //
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    DialogInterface.OnClickListener onDialogPositiveClick = (dialogInterface, i) -> {
+
+                        //
+                        // Redirect download page
+                        //
+                        String url = "http://haldun.online";
+
+                        try {
+                            Intent intentBrowser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                            intentBrowser.addCategory(Intent.CATEGORY_BROWSABLE);
+                            intentBrowser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intentBrowser);
+                        } catch (ActivityNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    };
+
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LibraryActivity.this);
+                    dialogBuilder.setTitle(getString(R.string.update))
+                            .setMessage(getString(R.string.new_version_released))
+                            .setPositiveButton(getString(R.string.download), onDialogPositiveClick)
+                            .setNegativeButton(getString(R.string.cancel), null);
+
+                    AlertDialog dialog = dialogBuilder.create();
+                    dialog.show();
+
+                }
+            });
+
+        }
+    }
+
+    private void checkRememberMeAvailability() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(LibraryActivity.this);
+        builder.setTitle("Uyarı")
+                .setMessage(getString(R.string.need_email))
+                .setPositiveButton("E posta ekle", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        //
+                        // Create set e mail dialog views
+                        //
+
+                        View inflatedView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.dialog_layout_set_email, null, false);
+
+                        //
+                        // Show set e mail dialog
+                        //
+                        AlertDialog.Builder builder = new AlertDialog.Builder(LibraryActivity.this);
+                        builder.setView(inflatedView);
+                        builder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                String email = ((EditText) inflatedView.findViewById(R.id.dialog_layout_set_email_et_email)).getText().toString();
+                                String password = ((EditText) inflatedView.findViewById(R.id.dialog_layout_set_email_et_password)).getText().toString();
+
+                                firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                                        if (task.isSuccessful()) {
+
+                                            new Thread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+
+                                                        firebaseUser = firebaseAuth.getCurrentUser();
+
+                                                        haldun.update.user.email(CurrentUser.user.getId(), firebaseUser.getEmail());
+                                                        haldun.update.user.uid(CurrentUser.user.getId(), firebaseUser.getUid());
+                                                        haldun.update.user.password(CurrentUser.user.getId(), Cryptor.encryptString(password));
+
+                                                    } catch (SQLException e) {
+                                                        e.printStackTrace();
+                                                        // TODO: start error activity
+                                                    }
+
+                                                }
+                                            }).start();
+
+                                            Toast.makeText(LibraryActivity.this, "E posta başarıyla eklendi", Toast.LENGTH_SHORT).show();
+
+                                        }else {
+                                            Toast.makeText(LibraryActivity.this, "Hata!", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    }
+                                });
+
+                            }
+                        });
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+
+                    }
+                })
+                .setNegativeButton("İptal", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private void logout() {
 
         PreferencesTool preferencesTool = new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE));
@@ -232,13 +417,14 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         finish();
     }
 
-    private void loadBooks(){
+    private Thread loadBooks(){
 
         networkThread = new Thread(new Runnable() {
             @Override
             public void run() {
 
                 try {
+                    Log.e("DEBUG", "get books");
                     books = haldunDB.selectBook();
                     Sorting.sort(books, Sorting.Type.valueOf(new PreferencesTool(
                             getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE))
@@ -246,31 +432,46 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 } catch (IllegalArgumentException e) {
-                    new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE)).setValue(PreferencesTool.Keys.BOOK_SORTING_TYPE, String.valueOf(Sorting.Type.A_TO_Z));
+                    new PreferencesTool(getSharedPreferences(PreferencesTool.NAME, MODE_PRIVATE)).setValue(PreferencesTool.Keys.BOOK_SORTING_TYPE, String.valueOf(Sorting.Type.A_TO_Z_BOOK_NAME));
                 }
             }
         });
 
-        networkThread.start();
-        try {
-            networkThread.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        Thread mainThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-        bookAdapter = new BookAdapter(LibraryActivity.this, books);
+                networkThread.start();
+                try {
+                    networkThread.join();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
-        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    bookAdapter = new BookAdapter(LibraryActivity.this, books);
 
-        Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.item_animation_fall_down);
-        LayoutAnimationController layoutAnimationController = new LayoutAnimationController(animation);
+                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+                    linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
 
-        recyclerView.setLayoutAnimation(layoutAnimationController);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(bookAdapter);
+                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.item_animation_fall_down);
+                    LayoutAnimationController layoutAnimationController = new LayoutAnimationController(animation);
 
-        progressBar.setVisibility(View.GONE);
+                    recyclerView.setLayoutAnimation(layoutAnimationController);
+                    recyclerView.setLayoutManager(linearLayoutManager);
+                    recyclerView.setAdapter(bookAdapter);
+
+                    progressBar.setVisibility(View.GONE);
+
+                    swipeRefreshLayout.setRefreshing(false);
+                });
+            }
+        });
+
+        mainThread.start();
+
+        return mainThread;
     }
 
     private void init() {
@@ -283,11 +484,31 @@ public class LibraryActivity extends AppCompatActivity implements View.OnClickLi
         actionbar = findViewById(R.id.activity_library_actionbar);
         fab_addBook = findViewById(R.id.activity_library_fab_addBook);
         relativeLayout = findViewById(R.id.activity_library_relative_layout);
+        swipeRefreshLayout = findViewById(R.id.activity_library_swipe_refresh_layout);
 
         try {
             haldunDB = new haldun();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void setLastSeen() {
+        Intent setLastSeenIntent = new Intent(LibraryActivity.this, SetLastSeenService.class);
+        startService(setLastSeenIntent);
+    }
+
+    private void help() {
+
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+            Intent intent = new Intent(LibraryActivity.this, Help.class);
+            intent.putExtra("name", CurrentUser.user.getName() + "->" + CurrentUser.user.getEMail());
+            startService(intent);
+
+        } else {
+
+            Action.snackBar(LibraryActivity.this, relativeLayout);
         }
     }
 }

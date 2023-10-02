@@ -27,7 +27,7 @@ public class SetLastSeenService extends IntentService {
 
         DateTime lastSeen = new DateTime();
 
-        try {
+        try {Log.e("DEBUG", "set last seen");
             haldun.update.user.lastSeen(CurrentUser.user.getId(), lastSeen);
         } catch (SQLException e) {
             e.printStackTrace();
